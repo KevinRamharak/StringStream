@@ -53,10 +53,7 @@ export default class WritableStringStream extends Writable
             return;
         } else {
             // if the chunk results into a buffer overflow, allocate a new buffer and copy contents over
-            if (
-                chunk.length + (this.buffer.length - this.index) >
-                this.buffer.length
-            ) {
+            if (chunk.length + this.index > this.buffer.length) {
                 let newLength = this.buffer.length * 2;
                 // double the buffer size until we find a possible size or throw if we cannot allocate buffer
                 while (newLength < this.index + chunk.length) {
@@ -74,7 +71,9 @@ export default class WritableStringStream extends Writable
                         return;
                     }
                 }
-                this.buffer = Buffer.alloc(newLength, this.buffer);
+                const oldBuffer = this.buffer;
+                this.buffer = Buffer.alloc(newLength);
+                this.buffer.fill(oldBuffer, 0, this.index);
             }
             this.buffer.fill(chunk, this.index, this.index + chunk.length);
             this.index += chunk.length;
